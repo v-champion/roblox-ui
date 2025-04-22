@@ -37,14 +37,17 @@ export class SelectionProvider implements vscode.Disposable {
 		if (!this.providers.explorerView.visible) {
 			return false
 		}
-
+	
 		const activeEditor = vscode.window.activeTextEditor
 		if (activeEditor) {
 			const fsPath = activeEditor.document.uri.fsPath
-			await this.providers.explorerTree.revealByPath(fsPath, true)
-			return true
+			// Find which workspace this file belongs to
+			const workspaceFolder = vscode.workspace.getWorkspaceFolder(activeEditor.document.uri)
+			if (workspaceFolder) {
+				await this.providers.explorerTree.revealByPath(fsPath, true, workspaceFolder.uri.fsPath)
+				return true
+			}
 		}
-
 		return false
 	}
 }

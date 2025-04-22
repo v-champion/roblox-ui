@@ -339,12 +339,23 @@ export class ExplorerTreeProvider implements vscode.TreeDataProvider<ExplorerIte
 		}
 	}
 
-	public async revealByPath(path: string, select?: true | null) {
-		for (const [workspacePath, _] of this.servers) {
-			if (path.startsWith(workspacePath)) {
-				const domInstance = await this.findByPath(workspacePath, path)
+	public async revealByPath(path: string, select?: true | null, targetWorkspacePath?: string) {
+		if (targetWorkspacePath) {
+			// If a specific workspace is targeted, only reveal in that workspace
+			if (path.startsWith(targetWorkspacePath)) {
+				const domInstance = await this.findByPath(targetWorkspacePath, path)
 				if (domInstance) {
-					await this.revealById(workspacePath, domInstance.id, select)
+					await this.revealById(targetWorkspacePath, domInstance.id, select)
+				}
+			}
+		} else {
+			// If no workspace is specified, reveal in all workspaces (current behavior)
+			for (const [workspacePath, _] of this.servers) {
+				if (path.startsWith(workspacePath)) {
+					const domInstance = await this.findByPath(workspacePath, path)
+					if (domInstance) {
+						await this.revealById(workspacePath, domInstance.id, select)
+					}
 				}
 			}
 		}
